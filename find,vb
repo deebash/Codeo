@@ -1,0 +1,136 @@
+Public Class find
+    Dim lastSearchIndex = 0
+    Dim direction = "forward"
+    Dim lastReplaceIndex = -1
+    Dim editor As ICSharpCode.TextEditor.TextEditorControl = main.KryptonNavigator1.SelectedPage.Controls(0)
+    Private Sub find_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
+        Dim findString = editor.ActiveTextAreaControl.SelectionManager.SelectedText
+        findTxt.Text = findString
+        Dim txtIndex = editor.Text.IndexOf(findTxt.Text, lastSearchIndex)
+        lastSearchIndex = txtIndex + findTxt.Text.Length
+    End Sub
+
+    Private Sub findBackBtn_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles findBackBtn.Click
+        findBack()
+    End Sub
+
+    Private Sub findNextBtn_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles findNextBtn.Click
+        findNext()
+    End Sub
+
+    Function findNext()
+
+        If (direction = "backward") Then
+            lastSearchIndex = lastSearchIndex + findTxt.Text.Length
+        End If
+        direction = "forward"
+        Dim txtIndex = editor.Text.IndexOf(findTxt.Text, lastSearchIndex)
+        If (txtIndex = -1) Then
+            If CheckBox2.Checked Then
+                lastSearchIndex = 0
+                findNext()
+            Else
+                MsgBox("End of search result", MsgBoxStyle.Critical)
+            End If
+
+        End If
+        If (txtIndex <> -1) Then
+            Dim lineNumber = editor.Document.GetLineNumberForOffset(txtIndex)
+            editor.ActiveTextAreaControl.ScrollTo(lineNumber)
+            'editor.ActiveTextAreaControl.Caret.Position = txtIndex
+
+            editor.ActiveTextAreaControl.SelectionManager.ClearSelection()
+
+            Dim startCol = editor.ActiveTextAreaControl.Document.OffsetToPosition(txtIndex).Column
+            Dim startLine = lineNumber
+            Dim start = New ICSharpCode.TextEditor.TextLocation(startCol, startLine)
+
+            Dim endCol = editor.ActiveTextAreaControl.Document.OffsetToPosition(txtIndex).Column + findTxt.Text.Length
+            Dim endLine = lineNumber
+            Dim endI = New ICSharpCode.TextEditor.TextLocation(endCol, endLine)
+
+            editor.ActiveTextAreaControl.SelectionManager.SetSelection(start, endI)
+            editor.ActiveTextAreaControl.Caret.Position = endI
+            lastSearchIndex = txtIndex + findTxt.Text.Length
+        End If
+    End Function
+
+    Function findBack()
+        If (direction = "forward") Then
+            lastSearchIndex = lastSearchIndex - findTxt.Text.Length
+        End If
+        direction = "backward"
+        If (lastSearchIndex = 0) Then
+            lastSearchIndex = editor.Text.Length
+        End If
+        Dim txtIndex = editor.Text.LastIndexOf(findTxt.Text, lastSearchIndex)
+        If (txtIndex = -1) Then
+            If CheckBox2.Checked Then
+                lastSearchIndex = editor.Text.Length - 1
+                findBack()
+            Else
+                MsgBox("End of search result", MsgBoxStyle.Critical)
+            End If
+
+        End If
+        If (txtIndex <> -1) Then
+            Dim lineNumber = editor.Document.GetLineNumberForOffset(txtIndex)
+            editor.ActiveTextAreaControl.ScrollTo(lineNumber)
+            'editor.ActiveTextAreaControl.Caret.Position = txtIndex
+
+            editor.ActiveTextAreaControl.SelectionManager.ClearSelection()
+
+            Dim startCol = editor.ActiveTextAreaControl.Document.OffsetToPosition(txtIndex).Column
+            Dim startLine = lineNumber
+            Dim start = New ICSharpCode.TextEditor.TextLocation(startCol, startLine)
+
+            Dim endCol = editor.ActiveTextAreaControl.Document.OffsetToPosition(txtIndex).Column + findTxt.Text.Length
+            Dim endLine = lineNumber
+            Dim endI = New ICSharpCode.TextEditor.TextLocation(endCol, endLine)
+            editor.ActiveTextAreaControl.SelectionManager.SetSelection(start, endI)
+            editor.ActiveTextAreaControl.Caret.Position = endI
+            lastSearchIndex = txtIndex - findTxt.Text.Length
+        End If
+    End Function
+
+    Private Sub replaceBtn_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles replaceBtn.Click
+
+        editor.ActiveTextAreaControl.Document.Replace(lastReplaceIndex - findTxt.Text.Length, findTxt.Text.Length, replaceTxt.Text)
+
+
+        If (direction = "backward") Then
+            lastReplaceIndex = lastReplaceIndex + findTxt.Text.Length
+        End If
+        direction = "forward"
+        Dim txtIndex = editor.Text.IndexOf(findTxt.Text, lastReplaceIndex)
+        If (txtIndex = -1) Then
+            If CheckBox2.Checked Then
+                lastReplaceIndex = 0
+                findNext()
+            Else
+                MsgBox("End of search result", MsgBoxStyle.Critical)
+            End If
+
+        End If
+        If (txtIndex <> -1) Then
+            Dim lineNumber = editor.Document.GetLineNumberForOffset(txtIndex)
+            editor.ActiveTextAreaControl.ScrollTo(lineNumber)
+            'editor.ActiveTextAreaControl.Caret.Position = txtIndex
+
+            editor.ActiveTextAreaControl.SelectionManager.ClearSelection()
+
+            Dim startCol = editor.ActiveTextAreaControl.Document.OffsetToPosition(txtIndex).Column
+            Dim startLine = lineNumber
+            Dim start = New ICSharpCode.TextEditor.TextLocation(startCol, startLine)
+
+            Dim endCol = editor.ActiveTextAreaControl.Document.OffsetToPosition(txtIndex).Column + findTxt.Text.Length
+            Dim endLine = lineNumber
+            Dim endI = New ICSharpCode.TextEditor.TextLocation(endCol, endLine)
+
+            editor.ActiveTextAreaControl.SelectionManager.SetSelection(start, endI)
+            editor.ActiveTextAreaControl.Caret.Position = endI
+            lastReplaceIndex = txtIndex + findTxt.Text.Length
+        End If
+
+    End Sub
+End Class
